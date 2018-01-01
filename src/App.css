@@ -154,12 +154,18 @@ body, .app {
   background-size: 20px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
+
 .book-shelf-changer select {
   width: 100%;
   height: 100%;
   opacity: 0;
   cursor: pointer;
 }
+
+/* TODO: how to draw a check mark?
+.book-shelf-changer select option:before {
+  content: "✔ " attr(label);
+}*/
 
 /* book cover */
 
