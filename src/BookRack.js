@@ -4,38 +4,14 @@ import PropTypes from 'prop-types'
 import BookShelf from './BookShelf'
 import { Link } from 'react-router-dom'
 
-const STORAGE_KEY = 'my_books_rack'
-
 class BookRack extends React.Component {
   static propTypes = {
-    booksAPI: PropTypes.object.isRequired
-  }
-
-  state = {
-    books: []
-  }
-
-  constructor(props) {
-    super(props)
-    this.state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"books": []}');
-  }
-
-  componentDidMount() {
-    this.props.booksAPI.getAll().then((books) => {
-      this.setState({ books })
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
-    })
-  }
-
-  moveBook = (book, shelf) => {
-    this.setState((state) => ({
-      books: state.books.filter(b => b.id !== book.id).concat(Object.assign(book, {shelf: shelf}))
-    }))
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
-    this.props.booksAPI.update(book, shelf)
+    books: PropTypes.array.isRequired,
+    moveBook: PropTypes.func.isRequired
   }
 
   render () {
+    const {books, moveBook} = this.props
     return (
       <div className="list-books">
         <div className="list-books-title">
@@ -44,18 +20,18 @@ class BookRack extends React.Component {
         <div className="list-books-content">
           <div>
             <BookShelf
-              onMoveBook={this.moveBook}
-              books={this.state.books.filter((book) => "currentlyReading" === book.shelf)}
+              books={books.filter((book) => "currentlyReading" === book.shelf)}
+              moveBook={moveBook}
               description="Currently Reading"
             />
             <BookShelf
-              onMoveBook={this.moveBook}
-              books={this.state.books.filter((book) => "wantToRead" === book.shelf)}
+              books={books.filter((book) => "wantToRead" === book.shelf)}
+              moveBook={moveBook}
               description="Want to Read"
             />
             <BookShelf
-              onMoveBook={this.moveBook}
-              books={this.state.books.filter((book) => "read" === book.shelf)}
+              books={books.filter((book) => "read" === book.shelf)}
+              moveBook={moveBook}
               description="Read"
             />
           </div>

@@ -4,13 +4,13 @@ import PropTypes from 'prop-types'
 
 class BookShelf extends React.Component {
   static propTypes = {
-    onMoveBook: PropTypes.func.isRequired,
     books: PropTypes.array.isRequired,
+    moveBook: PropTypes.func.isRequired,
     description: PropTypes.string.isRequired
   }
 
   render () {
-    const { onMoveBook, books, description } = this.props
+    const { books, moveBook, description } = this.props
     return (
       <div className="bookshelf">
         <h2 className="bookshelf-title">{description}</h2>
@@ -25,13 +25,12 @@ class BookShelf extends React.Component {
                       height: 193,
                       backgroundImage: `url(${book.imageLinks.thumbnail})`
                     }}/>
-                    {console.log(book.shelf)}
                     <div className="book-shelf-changer">
                       <select
                           value={("shelf" in book) ? book.shelf : "none"}
                           id={"sh_" + book.id}
-                          onChange={() => onMoveBook(book, document.getElementById("sh_" + book.id).value)}>
-                        <option value="none" disabled>Move to...</option>
+                          onChange={() => moveBook(book, document.getElementById("sh_" + book.id).value)}>
+                        <option value="header" disabled>Move to...</option>
                         <option value="currentlyReading">Currently Reading</option>
                         <option value="wantToRead">Want to Read</option>
                         <option value="read">Read</option>
@@ -40,6 +39,7 @@ class BookShelf extends React.Component {
                     </div>
                   </div>
                   <div className="book-title">{book.title}</div>
+                  <div className="book-subtitle">{book.subtitle}</div>
                   <div className="book-authors">{book.authors}</div>
                 </div>
               </li>

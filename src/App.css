@@ -129,6 +129,10 @@ body, .app {
 .book-title {
   margin-top: 10px;
 }
+.book-subtitle {
+  font-size: 0.6em;
+  color: #888;
+}
 .book-authors {
   color: #999;
 }

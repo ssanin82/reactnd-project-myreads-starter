@@ -5,15 +5,60 @@ import './App.css'
 import BookSearch from './BookSearch'
 import BookRack from './BookRack'
 
+const STORAGE_KEY = 'my_books_state'
+
 class BooksApp extends React.Component {
+  state = {
+    books: []
+  }
+
+  constructor(props) {
+    super(props);
+    this.state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"books": []}');
+  }
+
+  componentDidMount() {
+    BooksAPI.getAll().then((books) => {
+      this.setState({ books });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    })
+  }
+
+  moveBook = (book, shelf) => {
+    this.setState((state) => ({
+      books: state.books.filter(b => b.id !== book.id).concat(Object.assign(book, {shelf: shelf}))
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    BooksAPI.update(book, shelf);
+  }
+
+  searchBooks = (query) => {
+    BooksAPI.search(query).then((books) => {
+      if (books !== undefined && typeof books[Symbol.iterator] === 'function') {
+        // Searched books do not have shelf field. Remote storage contain only books on our shelves.
+        for (let book of books) {
+          for (let bookShelved of this.state.books) {
+            if (bookShelved.id === book.id) {
+              book.shelf = bookShelved.shelf;
+            }
+          }
+        }
+        console.debug('SEARCHED: ' + JSON.stringify(books.map(book => ({"title": book.title, "subtitle": book.subtitle, "shelf": book.shelf}))));
+        this.setState({books: books});
+      } else {
+        this.setState({ books: []});
+      }
+    });
+  }
+
   render() {
     return (
       <div>
         <Route path='/' exact render={({ history }) => (
-          <BookRack booksAPI={BooksAPI}/>
+          <BookRack books={this.state.books} moveBook={this.moveBook}/>
         )}/>
         <Route path='/search' render={() => (
-          <BookSearch booksAPI={BooksAPI}/>
+          <BookSearch books={this.state.books} moveBook={this.moveBook} searchBooks={this.searchBooks}/>
         )}/>
       </div>
     )
