@@ -5,6 +5,8 @@ import BookShelf from './BookShelf'
 import { Link } from 'react-router-dom'
 import sortBy from 'sort-by'
 
+const STORAGE_KEY = 'my_books_search'
+
 class BookSearch extends React.Component {
   static propTypes = {
     books: PropTypes.array.isRequired,
@@ -16,9 +18,19 @@ class BookSearch extends React.Component {
     query: ''
   }
 
+  constructor(props) {
+    super(props);
+    let item = localStorage.getItem(STORAGE_KEY);
+    if (item !== null) {
+      this.state = JSON.parse(item);
+    };
+  }
+
   searchQuery = (query) => {
-    this.setState({ query: query.trim() }, () => {
+    query = query.trim();
+    this.setState({ query: query }, () => {
       this.props.searchBooks(query);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
     });
   }
 
@@ -27,7 +39,6 @@ class BookSearch extends React.Component {
   }
 
   render () {
-    const books = this.props.books.sort(sortBy('id')).sort(sortBy('subtitle')).sort(sortBy('title'))
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -43,7 +54,7 @@ class BookSearch extends React.Component {
         </div>
         <div className="search-books-results">
           <BookShelf
-            books={books}
+            books={this.props.books.sort(sortBy('id')).sort(sortBy('subtitle')).sort(sortBy('title'))}
             moveBook={this.props.moveBook}
             description="Search Result"
           />

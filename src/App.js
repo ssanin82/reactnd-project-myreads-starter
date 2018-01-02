@@ -4,6 +4,7 @@ import { Route } from 'react-router-dom'
 import './App.css'
 import BookSearch from './BookSearch'
 import BookRack from './BookRack'
+import { getAll } from './BooksAPI';
 
 const STORAGE_KEY = 'my_books_state'
 
@@ -14,15 +15,28 @@ class BooksApp extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"books": []}');
+    let item = localStorage.getItem(STORAGE_KEY);
+    if (item !== null) {
+      this.state = JSON.parse(item);
+    };
   }
 
-  componentDidMount() {
+  _getAll() {
     BooksAPI.getAll().then((books) => {
       this.setState({ books });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
     })
   }
+
+  componentDidMount() {
+    this._getAll();
+    console.debug('App.js componentDidMount')
+  }
+
+  /*componentDidUpdate() {
+    this._getAll();
+    console.debug('App.js componentDidUpdate')
+  }*/
 
   moveBook = (book, shelf) => {
     this.setState((state) => ({
@@ -43,7 +57,6 @@ class BooksApp extends React.Component {
             }
           }
         }
-        console.debug('SEARCHED: ' + JSON.stringify(books.map(book => ({"title": book.title, "subtitle": book.subtitle, "shelf": book.shelf}))));
         this.setState({books: books});
       } else {
         this.setState({ books: []});
@@ -54,7 +67,7 @@ class BooksApp extends React.Component {
   render() {
     return (
       <div>
-        <Route path='/' exact render={({ history }) => (
+        <Route path='/' exact render={() => (
           <BookRack books={this.state.books} moveBook={this.moveBook}/>
         )}/>
         <Route path='/search' render={() => (
