@@ -4,13 +4,13 @@ import { Route } from 'react-router-dom'
 import './App.css'
 import BookSearch from './BookSearch'
 import BookRack from './BookRack'
-import { getAll } from './BooksAPI';
 
 const STORAGE_KEY = 'my_books_state'
 
 class BooksApp extends React.Component {
   state = {
-    books: []
+    books: [],
+    searchBooks: []
   }
 
   constructor(props) {
@@ -23,31 +23,28 @@ class BooksApp extends React.Component {
 
   _getAll() {
     BooksAPI.getAll().then((books) => {
-      this.setState({ books });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+      this.setState({ books: books }, () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+      });
     })
   }
 
   componentDidMount() {
     this._getAll();
-    console.debug('App.js componentDidMount')
   }
-
-  /*componentDidUpdate() {
-    this._getAll();
-    console.debug('App.js componentDidUpdate')
-  }*/
 
   moveBook = (book, shelf) => {
     this.setState((state) => ({
       books: state.books.filter(b => b.id !== book.id).concat(Object.assign(book, {shelf: shelf}))
-    }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    }), () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+    });
     BooksAPI.update(book, shelf);
   }
 
-  searchBooks = (query) => {
+  findBooks = (query) => {
     BooksAPI.search(query).then((books) => {
+      let searchRes = [];
       if (books !== undefined && typeof books[Symbol.iterator] === 'function') {
         // Searched books do not have shelf field. Remote storage contain only books on our shelves.
         for (let book of books) {
@@ -57,10 +54,11 @@ class BooksApp extends React.Component {
             }
           }
         }
-        this.setState({books: books});
-      } else {
-        this.setState({ books: []});
+        searchRes = books;
       }
+      this.setState({ searchBooks: searchRes }, () => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+      });
     });
   }
 
@@ -71,7 +69,7 @@ class BooksApp extends React.Component {
           <BookRack books={this.state.books} moveBook={this.moveBook}/>
         )}/>
         <Route path='/search' render={() => (
-          <BookSearch books={this.state.books} moveBook={this.moveBook} searchBooks={this.searchBooks}/>
+          <BookSearch books={this.state.searchBooks} moveBook={this.moveBook} findBooks={this.findBooks}/>
         )}/>
       </div>
     )
