@@ -27,7 +27,7 @@ class BookSearch extends React.Component {
   }
 
   searchQuery = (query) => {
-    query = query.trim();
+    //query = query.trim();
     this.setState({ query: query }, () => {
       this.props.findBooks(query);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
